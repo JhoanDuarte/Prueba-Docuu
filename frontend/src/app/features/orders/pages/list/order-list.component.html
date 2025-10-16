@@ -1,0 +1,83 @@
+<section class="orders-header">
+  <div>
+    <h2>Ordenes de impresion</h2>
+    <p class="subtitle">Gestiona el ciclo completo: crear, editar, ver y eliminar ordenes.</p>
+  </div>
+  <button class="primary" routerLink="create" *ngIf="canEdit()">
+    Nueva orden
+  </button>
+</section>
+
+<form class="filters" [formGroup]="filterForm">
+  <div class="field">
+    <label for="search">Buscar</label>
+    <input id="search" type="text" formControlName="search" placeholder="Cliente o descripcion" />
+  </div>
+
+  <div class="field">
+    <label for="status">Estado</label>
+    <select id="status" formControlName="status">
+      <option value="">Todos</option>
+      <option value="pending">Pendiente</option>
+      <option value="in_progress">En progreso</option>
+      <option value="completed">Completada</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="delivery">Entrega</label>
+    <input id="delivery" type="date" formControlName="delivery_date" />
+  </div>
+</form>
+
+<div class="alert error" *ngIf="error">{{ error }}</div>
+
+<p class="loading" *ngIf="loading">Cargando datos...</p>
+
+<div class="table-wrapper" *ngIf="orders.length; else emptyState">
+  <table>
+    <thead>
+      <tr>
+        <th>Cliente</th>
+        <th>Descripcion</th>
+        <th>Estado</th>
+        <th>Entrega</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let order of orders">
+        <td>{{ order.client_name }}</td>
+        <td>{{ order.description }}</td>
+        <td>
+          <span [ngClass]="['status', 'status-' + order.status]">
+            {{ statusLabels[order.status] }}
+          </span>
+        </td>
+        <td>{{ order.delivery_date | date: 'yyyy-MM-dd' }}</td>
+        <td class="actions">
+          <a [routerLink]="[order.id]" class="link">Ver</a>
+          <a *ngIf="canEdit()" [routerLink]="[order.id, 'edit']" class="link">Editar</a>
+          <button *ngIf="canDelete()" type="button" class="link danger" (click)="delete(order)">Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<ng-template #emptyState>
+  <div class="empty">
+    <p>No hay ordenes registradas con los filtros seleccionados.</p>
+    <button class="primary" routerLink="create" *ngIf="canEdit()">Crear primera orden</button>
+  </div>
+</ng-template>
+
+<nav class="pagination" *ngIf="meta.last_page > 1">
+  <button type="button" (click)="changePage(meta.current_page - 1)" [disabled]="meta.current_page === 1">
+    Anterior
+  </button>
+  <span>Pagina {{ meta.current_page }} de {{ meta.last_page }}</span>
+  <button type="button" (click)="changePage(meta.current_page + 1)" [disabled]="meta.current_page === meta.last_page">
+    Siguiente
+  </button>
+</nav>

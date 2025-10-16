@@ -1,42 +1,62 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
+import { SessionService } from '../../../../core/services/session.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss'],
+  styleUrls: ['./login.component.scss']
 })
-export class LoginComponent {
-  private fb = inject(FormBuilder);
-  private auth = inject(AuthService);
-  private router = inject(Router);
+export class LoginComponent implements OnInit, OnDestroy {
+  private readonly fb = inject(FormBuilder);
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly session = inject(SessionService);
 
   loading = false;
   error = '';
+  private subscription?: Subscription;
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required]],
+    password: ['', [Validators.required]]
   });
 
-  submit() {
-    this.error = '';
-    if (this.form.invalid) return;
-    this.loading = true;
+  ngOnInit(): void {
+    if (this.auth.isLogged() && this.session.snapshot) {
+      this.router.navigate(['/orders']);
+    }
+  }
 
-    this.auth.login(this.form.value as any).subscribe({
+  ngOnDestroy(): void {
+    this.subscription?.unsubscribe();
+  }
+
+  submit(): void {
+    this.error = '';
+    if (this.form.invalid || this.loading) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.loading = true;
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/orders';
+
+    this.subscription = this.auth.login(this.form.value as { email: string; password: string }).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigate(['/orders']); // ruta protegida
+        this.router.navigateByUrl(returnUrl);
       },
       error: (err) => {
         this.loading = false;
-        this.error = err?.error?.errors?.credentials?.[0] ?? 'Credenciales inválidas';
+        this.error = err?.error?.errors?.credentials?.[0] ?? 'Credenciales invalidas';
       }
     });
   }

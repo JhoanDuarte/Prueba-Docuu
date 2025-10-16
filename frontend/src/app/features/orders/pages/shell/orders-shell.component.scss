@@ -1,0 +1,25 @@
+
+.orders-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.orders-shell header h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #0f172a;
+}
+
+.orders-shell header p {
+  margin: 0.3rem 0 0;
+  color: #475569;
+  font-weight: 500;
+}
+
+.orders-shell .content {
+  display: block;
+}
