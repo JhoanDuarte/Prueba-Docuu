@@ -1,0 +1,22 @@
+# global
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+.vscode/
+.idea/
+
+# Angular
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/cache/
+
+# Laravel
+backend/vendor/
+backend/storage/*.key
+backend/storage/*.log
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/.env
+backend/.env.*
