@@ -1,0 +1,64 @@
+<section class="form-card" *ngIf="!loading; else loadingTpl">
+  <header>
+    <div>
+      <h2>{{ title() }}</h2>
+      <p>Completa la informacion requerida. Todos los campos son obligatorios.</p>
+    </div>
+    <button type="button" class="ghost" (click)="cancel()">Volver</button>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="grid">
+      <label>
+        Cliente
+        <input type="text" formControlName="client_name" maxlength="100" />
+        <small *ngIf="form.controls.client_name.touched && form.controls.client_name.invalid">
+          El nombre es obligatorio y maximo 100 caracteres.
+        </small>
+      </label>
+
+      <label>
+        Fecha de entrega
+        <input type="date" formControlName="delivery_date" />
+        <small *ngIf="form.controls.delivery_date.hasError('required') && form.controls.delivery_date.touched">
+          La fecha es obligatoria.
+        </small>
+        <small *ngIf="duplicateDetected">
+          Ya existe una orden para este cliente y fecha.
+        </small>
+      </label>
+    </div>
+
+    <label>
+      Estado
+      <select formControlName="status">
+        <option *ngFor="let option of statuses" [value]="option.value">
+          {{ option.label }}
+        </option>
+      </select>
+    </label>
+
+    <label>
+      Descripcion
+      <textarea formControlName="description" rows="4" maxlength="500"></textarea>
+      <small *ngIf="form.controls.description.touched && form.controls.description.invalid">
+        La descripcion es obligatoria y maximo 500 caracteres.
+      </small>
+    </label>
+
+    <div class="actions">
+      <button type="submit" class="primary" [disabled]="saving">
+        {{ saving ? 'Guardando...' : 'Guardar' }}
+      </button>
+      <button type="button" class="ghost" (click)="cancel()" [disabled]="saving">Cancelar</button>
+    </div>
+
+    <p class="error" *ngIf="error">{{ error }}</p>
+  </form>
+</section>
+
+<ng-template #loadingTpl>
+  <div class="loading-state">
+    Cargando informacion de la orden...
+  </div>
+</ng-template>

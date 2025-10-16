@@ -1,0 +1,47 @@
+
+<section class="detail" *ngIf="!loading && order; else pending">
+  <header>
+    <div>
+      <h2>Detalle de orden</h2>
+      <p>ID: {{ order!.id }}</p>
+    </div>
+    <button type="button" class="ghost" (click)="back()">Volver</button>
+  </header>
+
+  <div class="grid">
+    <article>
+      <h3>Cliente</h3>
+      <p>{{ order!.client_name }}</p>
+    </article>
+
+    <article>
+      <h3>Estado</h3>
+      <span [ngClass]="['status', 'status-' + order!.status]">
+        {{ statusLabels[order!.status] }}
+      </span>
+    </article>
+
+    <article>
+      <h3>Entrega</h3>
+      <p>{{ order!.delivery_date | date: 'yyyy-MM-dd' }}</p>
+    </article>
+
+    <article>
+      <h3>Actualizacion</h3>
+      <p>{{ order!.updated_at | date: 'yyyy-MM-dd HH:mm' }}</p>
+    </article>
+  </div>
+
+  <article class="description">
+    <h3>Descripcion</h3>
+    <p>{{ order!.description }}</p>
+  </article>
+</section>
+
+<ng-template #pending>
+  <div class="pending">
+    <p *ngIf="loading">Cargando informacion...</p>
+    <p *ngIf="!loading && error" class="error">{{ error }}</p>
+    <button *ngIf="!loading && error" type="button" (click)="back()">Volver</button>
+  </div>
+</ng-template>

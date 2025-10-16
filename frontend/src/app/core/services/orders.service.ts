@@ -1,47 +1,89 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
+
+export type OrderStatus = 'pending' | 'in_progress' | 'completed';
 
 export interface Order {
   id?: number;
   client_name: string;
   description: string;
-  status: 'pending' | 'in_progress' | 'completed';
+  status: OrderStatus;
   delivery_date: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface OrdersQuery {
+  page?: number;
+  per_page?: number;
+  search?: string;
+  status?: OrderStatus;
+  client_name?: string;
+  delivery_date?: string;
+  exclude_id?: number;
+}
+
+export interface OrdersResponse {
+  data: Order[];
+  meta: {
+    current_page: number;
+    per_page: number;
+    total: number;
+    last_page: number;
+  };
 }
 
 @Injectable({ providedIn: 'root' })
 export class OrdersService {
-  private base = `${environment.apiBase}/api/orders`;
+  private readonly base = `${environment.apiBase}/api/orders`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
-  /** Listar con filtros opcionales y paginación */
-  list(filters: Partial<Pick<Order, 'client_name' | 'delivery_date'>> = {}): Observable<any> {
+  /** Lista ordenes aplicando filtros y paginacion */
+  list(query: OrdersQuery = {}): Observable<OrdersResponse> {
     let params = new HttpParams();
-    if (filters.client_name) params = params.set('client_name', filters.client_name);
-    if (filters.delivery_date) params = params.set('delivery_date', filters.delivery_date);
-    return this.http.get<{ data: Order[]; meta: any }>(this.base, { params });
+    Object.entries(query).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '') {
+        params = params.set(key, String(value));
+      }
+    });
+
+    return this.http.get<OrdersResponse>(this.base, { params });
   }
 
-  /** Obtener una orden */
-  get(id: number): Observable<{ data: Order }> {
-    return this.http.get<{ data: Order }>(`${this.base}/${id}`);
+  /** Recupera una orden por id */
+  get(id: number): Observable<Order> {
+    return this.http.get<{ data: Order }>(`${this.base}/${id}`).pipe(map((resp) => resp.data));
   }
 
-  /** Crear una orden */
-  create(order: Order): Observable<{ data: Order }> {
-    return this.http.post<{ data: Order }>(this.base, order);
+  /** Crea una orden */
+  create(order: Order): Observable<Order> {
+    return this.http.post<{ data: Order }>(this.base, order).pipe(map((resp) => resp.data));
   }
 
-  /** Actualizar una orden */
-  update(id: number, order: Partial<Order>): Observable<{ data: Order }> {
-    return this.http.put<{ data: Order }>(`${this.base}/${id}`, order);
+  /** Actualiza una orden existente */
+  update(id: number, order: Partial<Order>): Observable<Order> {
+    return this.http.put<{ data: Order }>(`${this.base}/${id}`, order).pipe(map((resp) => resp.data));
   }
 
-  /** Eliminar una orden */
+  /** Elimina una orden */
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);
+  }
+
+  /** Verifica si existe una orden con el mismo cliente y fecha */
+  checkDuplicate(clientName: string, deliveryDate: string, excludeId?: number): Observable<boolean> {
+    const params: OrdersQuery = {
+      client_name: clientName,
+      delivery_date: deliveryDate,
+      per_page: 1
+    };
+    if (excludeId) {
+      params.exclude_id = excludeId;
+    }
+
+    return this.list(params).pipe(map((resp) => resp.data.length > 0));
   }
 }

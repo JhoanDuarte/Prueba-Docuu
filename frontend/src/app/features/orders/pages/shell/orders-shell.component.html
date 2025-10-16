@@ -1,0 +1,13 @@
+
+<section class="orders-shell">
+  <header>
+    <div>
+      <h1>Modulo de ordenes</h1>
+      <p>Usuario: {{ userName() }} · Rol: {{ userRole() | uppercase }}</p>
+    </div>
+  </header>
+
+  <div class="content">
+    <router-outlet />
+  </div>
+</section>
