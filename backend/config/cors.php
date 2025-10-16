@@ -1,14 +1,13 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Paths
     |--------------------------------------------------------------------------
     |
-    | Rutas que deben permitir CORS. 
-    | "api/*" abre todas las rutas de tu API.
+    | Define the paths that should be accessible through CORS. Exposing "api/*"
+    | keeps all API routes available for the Angular client.
     |
     */
 
@@ -18,9 +17,6 @@ return [
     |--------------------------------------------------------------------------
     | Allowed Methods
     |--------------------------------------------------------------------------
-    |
-    | Puedes usar ['*'] para permitir todos los métodos HTTP.
-    |
     */
 
     'allowed_methods' => ['*'],
@@ -30,20 +26,26 @@ return [
     | Allowed Origins
     |--------------------------------------------------------------------------
     |
-    | Para desarrollo: permite Angular (localhost:4200).
-    | Luego en producción cambia esto a tu dominio real.
+    | Restrict origins to the Angular dev server. Adjust for production domains.
     |
     */
 
-    'allowed_origins' => ['http://localhost:4200'],
+    'allowed_origins' => [
+        env('FRONTEND_URL', 'http://localhost:4200'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Allowed Origins Patterns
+    |--------------------------------------------------------------------------
+    */
+
+    'allowed_origins_patterns' => [],
 
     /*
     |--------------------------------------------------------------------------
     | Allowed Headers
     |--------------------------------------------------------------------------
-    |
-    | ['*'] permite todos los encabezados personalizados.
-    |
     */
 
     'allowed_headers' => ['*'],
@@ -60,9 +62,6 @@ return [
     |--------------------------------------------------------------------------
     | Max Age
     |--------------------------------------------------------------------------
-    |
-    | Tiempo máximo (en segundos) que un navegador puede cachear la respuesta.
-    |
     */
 
     'max_age' => 0,
@@ -71,12 +70,7 @@ return [
     |--------------------------------------------------------------------------
     | Supports Credentials
     |--------------------------------------------------------------------------
-    |
-    | Si usarás cookies o credenciales cruzadas, cambia a true.
-    | Para esta prueba no es necesario.
-    |
     */
 
     'supports_credentials' => false,
-
 ];

@@ -11,11 +11,13 @@ class RoleMiddleware
     {
         $user = auth('api')->user();
         if (!$user) {
-            return response()->json(['errors'=>['auth'=>['Unauthorized']]], 401);
+            // No hay token valido, detiene la ejecucion de inmediato
+            return response()->json(['errors' => ['auth' => ['Unauthorized']]], 401);
         }
 
-        if (!in_array($user->role, $roles)) {
-            return response()->json(['errors'=>['auth'=>['Forbidden']]], 403);
+        if (!in_array($user->role, $roles, true)) {
+            // El rol autenticado no coincide con los roles permitidos para la ruta
+            return response()->json(['errors' => ['auth' => ['Forbidden']]], 403);
         }
 
         return $next($request);

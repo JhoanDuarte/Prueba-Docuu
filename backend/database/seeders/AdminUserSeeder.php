@@ -10,14 +10,37 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::updateOrCreate(
-            ['email' => 'admin@docuu.test'],
+        $users = [
             [
                 'name' => 'Admin Docuu',
-                'password' => Hash::make('admin123'),
+                'email' => 'admin@docuu.test',
+                'password' => 'admin123',
                 'role' => 'admin',
-            ]
-        );
+            ],
+            [
+                'name' => 'Operator Docuu',
+                'email' => 'operator@docuu.test',
+                'password' => 'operator123',
+                'role' => 'operator',
+            ],
+            [
+                'name' => 'Viewer Docuu',
+                'email' => 'viewer@docuu.test',
+                'password' => 'viewer123',
+                'role' => 'viewer',
+            ],
+        ];
+
+        foreach ($users as $user) {
+            // Crea o actualiza los usuarios base con contrasenas cifradas y roles definidos
+            User::updateOrCreate(
+                ['email' => $user['email']],
+                [
+                    'name' => $user['name'],
+                    'password' => Hash::make($user['password']),
+                    'role' => $user['role'],
+                ]
+            );
+        }
     }
 }
-
