@@ -74,27 +74,35 @@ class OrderController extends Controller
     {
         $order = Order::create($request->validated());
 
-        return (new OrderResource($order))
-            ->response()
-            ->setStatusCode(201);
+        // Reutiliza el recurso para mantener la misma estructura en todas las respuestas
+        $payload = (new OrderResource($order))->resolve($request);
+
+        return response()->json(['data' => $payload], 201);
     }
 
-    public function show(Order $order): JsonResponse
+    public function show(Request $request, Order $order): JsonResponse
     {
-        return (new OrderResource($order))->response();
+        // Resuelve el recurso con el request actual para respetar mutaciones o includes
+        $payload = (new OrderResource($order))->resolve($request);
+
+        return response()->json(['data' => $payload]);
     }
 
     public function update(UpdateOrderRequest $request, Order $order): JsonResponse
     {
         $order->update($request->validated());
 
-        return (new OrderResource($order))->response();
+        // Genera nuevamente la representacion JSON tras la actualizacion
+        $payload = (new OrderResource($order))->resolve($request);
+
+        return response()->json(['data' => $payload]);
     }
 
     public function destroy(Order $order): JsonResponse
     {
         $order->delete();
 
-        return response()->noContent();
+        // Devuelve una respuesta sin contenido pero compatible con JsonResponse
+        return response()->json(null, 204);
     }
 }
