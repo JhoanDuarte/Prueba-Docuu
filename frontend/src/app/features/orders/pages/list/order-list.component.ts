@@ -100,7 +100,7 @@ export class OrderListComponent implements OnInit {
   }
 
   canDelete(): boolean {
-    return this.session.hasRole(['operator', 'admin']);
+    return this.session.hasRole(['admin']);
   }
 
   refresh(): void {

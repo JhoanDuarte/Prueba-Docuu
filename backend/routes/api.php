@@ -17,8 +17,8 @@ Route::middleware('auth:api')->group(function () {
     Route::get('orders',       [OrderController::class, 'index'])->middleware('role:viewer,operator,admin');
     Route::get('orders/{order}',[OrderController::class, 'show'])->middleware('role:viewer,operator,admin');
 
-    // operator/admin crean/editan/eliminan
+    // operator/admin crean/editan; eliminar reservado a admin
     Route::post('orders',      [OrderController::class, 'store'])->middleware('role:operator,admin');
     Route::put('orders/{order}',[OrderController::class, 'update'])->middleware('role:operator,admin');
-    Route::delete('orders/{order}',[OrderController::class, 'destroy'])->middleware('role:operator,admin');
+    Route::delete('orders/{order}',[OrderController::class, 'destroy'])->middleware('role:admin');
 });
