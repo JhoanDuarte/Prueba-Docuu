@@ -52,7 +52,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.subscription = this.auth.login(this.form.value as { email: string; password: string }).subscribe({
       next: () => {
         this.loading = false;
-        console.log('submit', this.form.value);
+
         this.router.navigateByUrl(returnUrl);
       },
       error: (err) => {

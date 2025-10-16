@@ -3,6 +3,7 @@
 ## Requisitos previos
 - Node.js 18 o superior.
 - Angular CLI opcional (`npm install -g @angular/cli`).
+- `zone.js` ~0.15.x (se instala automáticamente con `npm install`).
 
 ## Instalacion
 1. Entrar a la carpeta `frontend`.
@@ -13,8 +14,8 @@
 - Por defecto apunta a `http://127.0.0.1:8000`; ajusta la URL si backend corre en otro host o puerto.
 
 ## Comandos utiles
-- `npm start` o `npm run start`: levanta la aplicacion en modo desarrollo en `http://localhost:4200`.
-- `npm run build`: genera artefactos listos para produccion en `dist/`.
+- `npm start` o `npm run start`: levanta la aplicación con Vite + SSR y reconstruye automáticamente.
+- `npm run build`: genera artefactos listos para producción en `dist/`.
 
 ## Flujo sugerido
 1. Inicia sesion con alguno de los usuarios sembrados (`admin@docuu.test`, etc.).

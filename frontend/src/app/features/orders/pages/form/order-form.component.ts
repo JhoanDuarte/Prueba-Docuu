@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { combineLatest, debounceTime, distinctUntilChanged, filter, switchMap } from 'rxjs';
+import { combineLatest, debounceTime, distinctUntilChanged, filter, skip, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { OrdersService, Order, OrderStatus } from '../../../../core/services/orders.service';
 
@@ -13,7 +13,8 @@ type Mode = 'create' | 'edit';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './order-form.component.html',
-  styleUrls: ['./order-form.component.scss']
+  styleUrls: ['./order-form.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OrderFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
@@ -21,6 +22,7 @@ export class OrderFormComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   mode: Mode = 'create';
   loading = false;
@@ -65,12 +67,14 @@ export class OrderFormComponent implements OnInit {
       next: () => {
         this.saving = false;
         this.router.navigate(['/orders']);
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.saving = false;
         this.error = err?.error?.errors
           ? 'Revisa los datos ingresados.'
           : 'Ocurrio un error al guardar la orden.';
+        this.cdr.markForCheck();
       }
     });
   }
@@ -94,22 +98,28 @@ export class OrderFormComponent implements OnInit {
 
   private loadOrder(id: number): void {
     this.loading = true;
+    this.cdr.markForCheck();
     this.orders
       .get(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (order) => {
           this.loading = false;
-          this.form.patchValue({
-            client_name: order.client_name,
-            description: order.description,
-            status: order.status,
-            delivery_date: order.delivery_date
-          });
+          this.form.patchValue(
+            {
+              client_name: order.client_name,
+              description: order.description,
+              status: order.status,
+              delivery_date: order.delivery_date
+            },
+            { emitEvent: false }
+          );
+          this.cdr.markForCheck();
         },
         error: () => {
           this.loading = false;
           this.error = 'No se pudo cargar la orden solicitada.';
+          this.cdr.markForCheck();
         }
       });
   }
@@ -118,35 +128,12 @@ export class OrderFormComponent implements OnInit {
     const clientControl = this.form.controls.client_name;
     const dateControl = this.form.controls.delivery_date;
 
-    clientControl.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((value) => {
-        if (!value) {
-          this.duplicateDetected = false;
-          this.removeDuplicateError(dateControl);
-        }
-      });
-
-    dateControl.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((value) => {
-        if (!value) {
-          this.duplicateDetected = false;
-          this.removeDuplicateError(dateControl);
-        }
-      });
-
     combineLatest([
-      clientControl.valueChanges.pipe(
-        debounceTime(300),
-        distinctUntilChanged()
-      ),
-      dateControl.valueChanges.pipe(
-        debounceTime(300),
-        distinctUntilChanged()
-      )
+      clientControl.valueChanges.pipe(debounceTime(300), distinctUntilChanged()),
+      dateControl.valueChanges.pipe(debounceTime(300), distinctUntilChanged())
     ])
       .pipe(
+        skip(1),
         filter(([client, delivery]) => !!client && !!delivery),
         switchMap(([client, delivery]) =>
           this.orders.checkDuplicate(client!, delivery!, this.mode === 'edit' ? this.orderId : undefined)
@@ -160,6 +147,7 @@ export class OrderFormComponent implements OnInit {
         } else {
           this.removeDuplicateError(dateControl);
         }
+        this.cdr.markForCheck();
       });
   }
 

@@ -34,7 +34,7 @@
 
 <p class="loading" *ngIf="loading">Cargando datos...</p>
 
-<div class="table-wrapper" *ngIf="orders.length; else emptyState">
+<div class="table-wrapper" *ngIf="(orders$ | async)?.length; else emptyState">
   <table>
     <thead>
       <tr>
@@ -46,7 +46,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let order of orders">
+      <tr *ngFor="let order of orders$ | async; trackBy: trackByOrder">
         <td>{{ order.client_name }}</td>
         <td>{{ order.description }}</td>
         <td>
@@ -72,12 +72,14 @@
   </div>
 </ng-template>
 
-<nav class="pagination" *ngIf="meta.last_page > 1">
-  <button type="button" (click)="changePage(meta.current_page - 1)" [disabled]="meta.current_page === 1">
-    Anterior
-  </button>
-  <span>Pagina {{ meta.current_page }} de {{ meta.last_page }}</span>
-  <button type="button" (click)="changePage(meta.current_page + 1)" [disabled]="meta.current_page === meta.last_page">
-    Siguiente
-  </button>
+<nav class="pagination" *ngIf="meta$ | async as meta" [hidden]="meta.last_page <= 1">
+  <ng-container>
+    <button type="button" (click)="changePage(meta.current_page - 1)" [disabled]="meta.current_page === 1">
+      Anterior
+    </button>
+    <span>Pagina {{ meta.current_page }} de {{ meta.last_page }}</span>
+    <button type="button" (click)="changePage(meta.current_page + 1)" [disabled]="meta.current_page === meta.last_page">
+      Siguiente
+    </button>
+  </ng-container>
 </nav>

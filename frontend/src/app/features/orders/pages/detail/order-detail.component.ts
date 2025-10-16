@@ -1,6 +1,5 @@
-
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { OrdersService, Order } from '../../../../core/services/orders.service';
@@ -10,13 +9,15 @@ import { OrdersService, Order } from '../../../../core/services/orders.service';
   standalone: true,
   imports: [CommonModule, RouterModule, DatePipe],
   templateUrl: './order-detail.component.html',
-  styleUrls: ['./order-detail.component.scss']
+  styleUrls: ['./order-detail.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OrderDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly orders = inject(OrdersService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   loading = true;
   error = '';
@@ -33,6 +34,7 @@ export class OrderDetailComponent implements OnInit {
     if (!idParam) {
       this.error = 'No se encontro la orden solicitada.';
       this.loading = false;
+      this.cdr.markForCheck();
       return;
     }
 
@@ -44,10 +46,12 @@ export class OrderDetailComponent implements OnInit {
         next: (order) => {
           this.order = order;
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.error = 'No se pudo cargar la orden.';
           this.loading = false;
+          this.cdr.markForCheck();
         }
       });
   }
