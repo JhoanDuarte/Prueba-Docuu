@@ -6,11 +6,8 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent},
 
   // placeholder: luego apuntamos a las rutas de orders
-  {
-    path: 'orders',
-    canActivate: [authGuard],
-    loadChildren: () => import('./features/orders/orders.routes')
-      .then(m => m.ORDERS_ROUTES)
+  { path: 'orders', canActivate: [authGuard], loadChildren: () =>
+      import('./features/orders/orders.routes').then(m => m.ORDERS_ROUTES)
   },
 
   { path: '', pathMatch: 'full', redirectTo: 'orders' },
