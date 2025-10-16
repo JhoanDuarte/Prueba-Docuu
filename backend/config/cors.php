@@ -30,9 +30,10 @@ return [
     |
     */
 
-    'allowed_origins' => [
+    'allowed_origins' => array_filter([
         env('FRONTEND_URL', 'http://localhost:4200'),
-    ],
+        env('FRONTEND_URL_ALT', 'http://127.0.0.1:4200'),
+    ]),
 
     /*
     |--------------------------------------------------------------------------
