@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Order;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -14,12 +15,13 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->string('client_name', 100);
-            $table->text('description'); // validamos máx. 500 por request
-            $table->enum('status', ['pending','in_progress','completed'])->default('pending');
+            $table->text('description'); // la capa de validacion aplica el maximo de 500 caracteres
+            $table->enum('status', Order::STATUSES)->default('pending');
             $table->date('delivery_date');
             $table->timestamps();
 
-            $table->unique(['client_name','delivery_date'], 'orders_unique_client_date');
+            // Protege contra ordenes duplicadas por cliente y fecha de entrega
+            $table->unique(['client_name', 'delivery_date'], 'orders_unique_client_date');
         });
     }
 
