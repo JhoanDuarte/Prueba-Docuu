@@ -1,41 +1,24 @@
-import { Injectable } from '@angular/core';
-import {
-  HttpInterceptor,
-  HttpRequest,
-  HttpHandler,
-  HttpEvent,
-  HttpErrorResponse
-} from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
-import { Router } from '@angular/router';
-import { TokenService } from './app/core/services/token.service';
+// frontend/src/main.ts
+import { bootstrapApplication } from '@angular/platform-browser';
 
-@Injectable()
-export class AuthInterceptor implements HttpInterceptor {
-  constructor(private token: TokenService, private router: Router) {}
+import { provideRouter } from '@angular/router';
+import { routes } from './app/app.routes';
 
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // Adjuntar Authorization si hay token
-    const t = this.token.get();
-    const request = t
-      ? req.clone({ setHeaders: { Authorization: `Bearer ${t}` } })
-      : req;
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { inject, provideZoneChangeDetection } from '@angular/core';
+import { AuthInterceptor } from './app/core/interceptors/auth-interceptor';
 
-    return next.handle(request).pipe(
-      catchError((err: HttpErrorResponse) => {
-        // 401: sesión inválida/expirada → limpiar y enviar a /login
-        if (err.status === 401) {
-          this.token.clear();
-          // Evitar bucle si ya estás en /login
-          if (location.pathname !== '/login') this.router.navigate(['/login']);
-        }
-        // 403: prohibido → puedes redirigir o mostrar aviso
-        if (err.status === 403) {
-          console.warn('Acceso prohibido (403)');
-          // Ejemplo: this.router.navigate(['/']); // o mostrar toast
-        }
-        return throwError(() => err);
-      })
-    );
-  }
-}
+
+// Adaptador: permite usar la clase AuthInterceptor con withInterceptors
+const authInterceptorFn = (req: any, next: any) =>
+  inject(AuthInterceptor).intercept(req, next);
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideRouter(routes),
+    // Registramos la clase para que Angular pueda inyectarle TokenService y Router
+    AuthInterceptor,
+    provideHttpClient(withInterceptors([authInterceptorFn])),
+  ],
+}).catch(err => console.error(err));
